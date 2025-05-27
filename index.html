@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Guardar nombres</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background-color: #f5f5f5;
+    }
+
+    h1, h2 {
+      color: #333;
+    }
+
+    form {
+      margin-bottom: 2rem;
+    }
+
+    input[type="text"] {
+      padding: 0.5rem;
+      width: 200px;
+      margin-right: 1rem;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      background: white;
+      margin-bottom: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 4px;
+      box-shadow: 0 0 3px rgba(0,0,0,0.1);
+    }
+
+    .mensaje {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Guardar nombre</h1>
+
+  <form id="formulario">
+    <input type="text" id="nombre" placeholder="Escribe tu nombre" required />
+    <button type="submit">Enviar</button>
+  </form>
+
+  <p class="mensaje" id="mensaje"></p>
+
+  <h2>Lista de nombres guardados:</h2>
+  <ul id="lista-nombres"></ul>
+
+  <script>
+    const API_URL = 'https://nombre-app.up.railway.app/api/usuarios/';
+    const form = document.getElementById('formulario');
+    const inputNombre = document.getElementById('nombre');
+    const mensaje = document.getElementById('mensaje');
+    const lista = document.getElementById('lista-nombres');
+
+    // Obtener la lista de nombres
+    async function obtenerNombres() {
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+
+        lista.innerHTML = ''; // Limpiar lista
+        data.forEach(usuario => {
+          const li = document.createElement('li');
+          li.textContent = usuario.nombre;
+          lista.appendChild(li);
+        });
+      } catch (error) {
+        console.error('Error al obtener los nombres:', error);
+      }
+    }
+
+    // Enviar nuevo nombre
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      mensaje.textContent = '';
+
+      const nombre = inputNombre.value.trim();
+      if (!nombre) return;
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ nombre })
+        });
+
+        if (response.ok) {
+          mensaje.textContent = 'Nombre guardado correctamente.';
+          inputNombre.value = '';
+          obtenerNombres(); // actualizar lista
+        } else {
+          mensaje.textContent = 'Error al guardar el nombre.';
+        }
+      } catch (error) {
+        console.error('Error al enviar el nombre:', error);
+        mensaje.textContent = 'Error de conexión.';
+      }
+    });
+
+    // Cargar nombres al inicio
+    obtenerNombres();
+  </script>
+</body>
+</html>
